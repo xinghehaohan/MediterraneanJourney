@@ -21,7 +21,7 @@ const ScrollTopAndComment = () => {
         className={`fixed right-8 bottom-9 hidden flex-col gap-6 ${show ? 'md:flex' : 'md:hidden'}`}
       >
         <button className="mb-16">
-        {/* To create a button you just need to provide a React component that has an ID, namespace and type.
+          {/* To create a button you just need to provide a React component that has an ID, namespace and type.
 
 Once you added this element a GET request is made to retrieve info about the button with that certain ID and namespace. If no button is found, a new resource is created with the ID/namespace identifier. */}
           {/* <ClapButton id="diy-fish-holder" namespace="post" hideCounterIfLessThan={1} /> */}

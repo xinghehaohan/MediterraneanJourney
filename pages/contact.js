@@ -12,12 +12,12 @@ const Contact = () => {
         </h1>
         <div className="pt-10 pb-8">
           <ul className="font-semi-bold flex flex-col space-y-4">
+            <ContactLink href="mailto:lianna1993su@gmail.com" title="gmail" icon="lianna1993su" />
             <ContactLink
-              href="mailto:lianna1993su@gmail.com"
-              title="gmail"
-              icon="lianna1993su"
+              href="https://github.com/xinghehaohan"
+              title="github"
+              icon="xinghehaohan"
             />
-            <ContactLink href="https://github.com/xinghehaohan" title="github" icon="xinghehaohan" />
             <ContactLink href="https://twitter.com/sMianShan" title="twitter" icon="sMianShan" />
             <ContactLink
               href="https://www.linkedin.com/in/lianna-su-junjie/"
