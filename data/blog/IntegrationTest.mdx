@@ -1,0 +1,147 @@
+---
+title: Learn Integration test for a web application using the Testing Library and Jest.
+date: '2022-07-06'
+tags: [test, Jest, react]
+draft: false
+summary: This example tests the login functionality of a web application, which involves multiple components and interactions, including form submission, authentication, and routing.
+---
+
+<img className="inline" src="/static/images/Blog/apple-privacy.jpg" alt="Apple Privacy" />
+
+ ```js
+import { render, fireEvent, waitFor, screen } from '@testing-library/react';
+import { rest } from 'msw';
+import { setupServer } from 'msw/node';
+import { MemoryRouter, Route } from 'react-router-dom';
+
+import App from './App';
+
+const server = setupServer(
+  rest.post('/login', (req, res, ctx) => {
+    const { username, password } = req.body;
+
+    if (username === 'testuser' && password === 'password') {
+      return res(ctx.status(200), ctx.json({ token: 'testtoken' }));
+    } else {
+      return res(ctx.status(401), ctx.json({ message: 'Invalid credentials' }));
+    }
+  })
+);
+
+beforeAll(() => server.listen());
+afterEach(() => server.resetHandlers());
+afterAll(() => server.close());
+
+describe('Login', () => {
+  it('displays error message for invalid credentials', async () => {
+    render(
+      <MemoryRouter initialEntries={['/login']}>
+        <Route path="/login" component={App} />
+      </MemoryRouter>
+    );
+
+    const usernameInput = screen.getByLabelText('Username');
+    const passwordInput = screen.getByLabelText('Password');
+    const submitButton = screen.getByRole('button', { name: /submit/i });
+
+    fireEvent.change(usernameInput, { target: { value: 'invaliduser' } });
+    fireEvent.change(passwordInput, { target: { value: 'invalidpassword' } });
+    fireEvent.click(submitButton);
+
+    await waitFor(() => {
+      expect(screen.getByText('Invalid credentials')).toBeInTheDocument();
+    });
+  });
+
+  it('logs in and redirects to the dashboard', async () => {
+    render(
+      <MemoryRouter initialEntries={['/login']}>
+        <Route path="/login" component={App} />
+        <Route path="/dashboard" render={() => <div>Dashboard</div>} />
+      </MemoryRouter>
+    );
+
+    const usernameInput = screen.getByLabelText('Username');
+    const passwordInput = screen.getByLabelText('Password');
+    const submitButton = screen.getByRole('button', { name: /submit/i });
+
+    fireEvent.change(usernameInput, { target: { value: 'testuser' } });
+    fireEvent.change(passwordInput, { target: { value: 'password' } });
+    fireEvent.click(submitButton);
+
+    await waitFor(() => {
+      expect(screen.getByText('Dashboard')).toBeInTheDocument();
+    });
+  });
+});
+```
+\- Apple, [2016](https://www.apple.com/customer-letter/answers/)
+
+````js
+import { useState } from 'react';
+
+function App() {
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState(null);
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsLoggingIn(true);
+
+    try {
+      const response = await fetch('/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ username, password }),
+      });
+
+      if (response.ok) {
+        const { token } = await response.json();
+        localStorage.setItem('token', token);
+        window.location.href = '/dashboard';
+      } else {
+        const { message } = await response.json();
+        setError(message);
+      }
+    } catch (error) {
+      console.error(error);
+      setError('An error occurred');
+    }
+
+    setIsLoggingIn(false);
+  };
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <div>
+        <label htmlFor="username">Username</label>
+        <input
+          type="text"
+          id="username"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+        />
+      </div>
+      <div>
+        <label htmlFor="password">Password</label>
+        <input
+          type="password"
+          id="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
+      </div>
+      {error && <div>{error}</div>}
+      <button type="submit" disabled={isLoggingIn}>
+        {isLoggingIn ? 'Logging in...' : 'Submit'}
+      </button>
+    </form>
+  );
+}
+
+export default App;
+```
